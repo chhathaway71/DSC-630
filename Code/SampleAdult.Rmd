@@ -1,0 +1,70 @@
+---
+title: "SampleAdult"
+author: "Christine Hathaway"
+date: "December 24, 2019"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include = FALSE}
+#Set the working directory
+setwd("C:/Users/Christine/Documents/Bellevue/DSC 630/Project/Datasets")
+```
+
+
+```{r include = FALSE}
+#Install packages needed for file
+library(ggplot2)
+library(reshape)
+library(reshape2)
+library("ggpubr")
+require(scales)
+library("pastecs")
+library("Hmisc")
+library("caret")
+library("plyr")
+```
+
+Import data from samadult.csv file
+
+```{r echo = FALSE }
+#Import samadult.csv file
+adult <- read.csv(file = "C:/Users/Christine/Documents/Bellevue/DSC 630/Project/Datasets/samadult.csv", header = TRUE)
+```
+
+Display first 5 records of file
+
+```{r echo = FALSE }
+head(adult)
+```
+
+Run stat.desc()) function of file
+
+```{r echo = FALSE }
+stat.desc(adult)
+```
+
+Run str() function of file
+
+```{r echo = FALSE }
+str(adult)
+```
+
+Run frequency of each variable
+
+```{r echo = FALSE }
+lapply(adult, function(x) {
+
+    if (is.numeric(x)) return(count(x))
+
+    if (is.factor(x)) return(table(x))
+
+})
+
+```

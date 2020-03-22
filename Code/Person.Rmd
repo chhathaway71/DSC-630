@@ -1,0 +1,647 @@
+---
+title: "Person"
+author: "Christine Hathaway"
+date: "December 24, 2019"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r include = TRUE}
+#Set the working directory
+setwd("C:/Users/Christine/Documents/Bellevue/DSC 630/Project/Datasets")
+```
+
+
+```{r include = FALSE}
+#Install packages needed for file
+library(ggplot2)
+library(reshape)
+library(reshape2)
+library("ggpubr")
+require(scales)
+library("pastecs")
+library("Hmisc")
+library("caret")
+library("plyr")
+```
+
+Import data from personsxcsv file
+
+```{r echo = TRUE }
+#Import personsx.csv file
+person <- read.csv(file = "C:/Users/Christine/Documents/Bellevue/DSC 630/Project/Datasets/personsx.csv", header = TRUE, na.strings = " ")
+```
+
+Display first five records of file
+
+```{r echo = TRUE }
+head(person)
+```
+
+Run stat.desc() function of file
+
+```{r echo = TRUE }
+stat.desc(person)
+```
+
+
+Run str() function of file
+
+```{r echo = TRUE }
+str(person)
+```
+
+
+Run frequency of each variable
+
+```{r echo = TRUE }
+lapply(person, function(x) {
+
+    if (is.numeric(x)) return(count(x))
+
+    if (is.factor(x)) return(table(x))
+
+})
+
+```
+
+Create categorical variables for analysis
+
+```{r echo = TRUE }
+
+person$sex <- factor(person$SEX)
+
+person$notcov <- factor(person$NOTCOV)
+
+person$delay <- factor(person$PDMED12M)
+
+person$need <- factor(person$PNMED12M)
+
+head(person$delay)
+head(person$need)
+```
+
+Create new variables
+
+```{r echo = TRUE }
+person$need2 <- with(person, ifelse(person$PNMED12M == 1, 1, 0))
+
+person$delay2 <- with(person, ifelse(person$PDMED12M == 1, 1, 0))
+
+person$notcov2 <- with(person, ifelse(person$NOTCOV == 2, 1, 0))
+
+person$need1 <- factor(person$need2)
+person$delay1 <- factor(person$delay2)
+person$notcov1 <- factor(person$notcov2)
+```
+
+Create new variables
+
+```{r echo = TRUE }
+person$medicaid <- with(person, ifelse(person$MEDICAID == 1 | person$MEDICAID == 2, 1, 0))
+person$medicaid <- factor(person$medicaid)
+
+person$medicare <- with(person, ifelse(person$MEDICARE == 1 | person$MEDICARE == 2, 1, 0))
+person$medicare <- factor(person$medicare)
+
+person$private <- with(person, ifelse(person$PRIVATE == 1 | person$PRIVATE == 2, 1, 0))
+person$private <- factor(person$private)
+
+person$schip <- with(person, ifelse(person$SCHIP == 1 | person$SCHIP == 2, 1, 0))
+person$schip <- factor(person$schip)
+
+person$ihs <- with(person, ifelse(person$IHS == 1 | person$IHS == 2, 1, 0))
+person$ihs <- factor(person$ihs)
+
+person$military <- with(person, ifelse(person$MILITARN == 1 | person$MILITARN == 2, 1, 0))
+person$military <- factor(person$military)
+
+person$public <- with(person, ifelse(person$OTHPUB == 1 | person$OTHPUB == 2, 1, 0))
+person$public <- factor(person$public)
+
+person$othgov <- with(person, ifelse(person$OTHGOV == 1 | person$OTHGOV == 2, 1, 0))
+person$othgov <- factor(person$othgov)
+
+person$single <- with(person, ifelse(person$SINGLE == 1 | person$SINGLE == 2, 1, 0))
+person$single <- factor(person$single)
+
+head(person$medicaid)
+```
+
+
+Create regression model for delayed care based on no insurance coverage
+
+```{r echo = TRUE }
+model <- glm(delay1~notcov1+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(model)
+
+```
+
+Create regression model for needed care but did not receive care based on no insurance coverage
+
+```{r echo = TRUE }
+model2 <- glm(need1~notcov1+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(model2)
+
+```
+
+
+Model  for types of insurance not seeking care
+
+```{r echo = TRUE }
+instypemodel <- glm(need1 ~ medicaid+medicare+private+schip+ihs+military+public+othgov+single, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(instypemodel)
+
+```
+
+
+Model  for medicare not seeking care
+
+```{r echo = TRUE }
+medicaremodel <- glm(need1 ~ medicare+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(medicaremodel)
+
+```
+
+
+
+Model  for medicaid not seeking care
+
+```{r echo = TRUE }
+medicaidmodel <- glm(need1 ~ medicaid+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(medicaidmodel)
+
+```
+
+Model  for private not seeking care
+
+```{r echo = TRUE }
+privatemodel <- glm(need1 ~ private+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(privatemodel)
+
+```
+
+Model  for schip not seeking care
+
+```{r echo = TRUE }
+schipmodel <- glm(need1 ~ schip+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(schipmodel)
+
+```
+
+Model  for ihs not seeking care
+
+```{r echo = TRUE }
+ihsmodel <- glm(need1 ~ ihs+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(ihsmodel)
+
+```
+
+Model  for military not seeking care
+
+```{r echo = TRUE }
+militarymodel <- glm(need1 ~ military+sex+AGE_P, data = person, family = "binomial")
+
+```
+Output model results
+
+```{r echo = TRUE }
+summary(militarymodel)
+
+```
+
+
+Model  for public not seeking care
+
+```{r echo = TRUE }
+publicmodel <- glm(need1 ~ public+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(publicmodel)
+
+```
+
+Model  for othgov not seeking care
+
+```{r echo = TRUE }
+othgovmodel <- glm(need1 ~ othgov+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(othgovmodel)
+
+```
+
+Model  for single not seeking care
+
+```{r echo = TRUE }
+singlemodel <- glm(need1 ~ single+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(singlemodel)
+
+```
+
+
+Histograms
+
+```{r echo = TRUE }
+# Histograms
+
+hist(person$NOTCOV)
+hist(person$PDMED12M)
+hist(person$PNMED12M)
+```
+
+```{r echo = TRUE }
+#Create dataset for testing correlation matrix
+
+newdata <- person[,c('AGE_P','notcov2', 'SEX', 'delay2', 'need2')]
+
+head(newdata)
+```
+
+Correlation matrix for insurance coverrage
+
+```{r echo = TRUE }
+#Correlation matrix 
+cor(newdata)
+```
+
+Create new variables
+
+```{r echo = TRUE }
+person$sstypea <- with(person, ifelse(person$SSTYPEA == 1, 1, 0))
+person$sstypea <- factor(person$sstypea)
+
+person$sstypeb <- with(person, ifelse(person$SSTYPEB == 1, 1, 0))
+person$sstypeb <- factor(person$sstypeb)
+
+
+person$sstypec <- with(person, ifelse(person$SSTYPEC == 1, 1, 0))
+person$sstypec <- factor(person$sstypec)
+
+person$sstyped <- with(person, ifelse(person$SSTYPED == 1, 1, 0))
+person$sstyped <- factor(person$sstyped)
+
+person$sstypee <- with(person, ifelse(person$SSTYPEE == 1, 1, 0))
+person$sstypee <- factor(person$sstypee)
+
+person$sstypef <- with(person, ifelse(person$SSTYPEF == 1, 1, 0))
+person$sstypef <- factor(person$sstypef)
+
+person$sstypeg <- with(person, ifelse(person$SSTYPEG == 1, 1, 0))
+person$sstypeg <- factor(person$sstypeg)
+
+person$sstypeh <- with(person, ifelse(person$SSTYPEH == 1, 1, 0))
+person$sstypeh <- factor(person$sstypeh)
+
+person$sstypei <- with(person, ifelse(person$SSTYPEI == 1, 1, 0))
+person$sstypei <- factor(person$sstypei)
+
+person$sstypej <- with(person, ifelse(person$SSTYPEJ == 1, 1, 0))
+person$sstypej <- factor(person$sstypej)
+
+
+person$sstypek <- with(person, ifelse(person$SSTYPEK == 1, 1, 0))
+person$sstypek <- factor(person$sstypek)
+
+person$sstypel <- with(person, ifelse(person$SSTYPEL == 1, 1, 0))
+person$sstypel <- factor(person$sstypel)
+
+
+head(person$sstypel)
+```
+
+Histograms for coverage types
+
+```{r echo = TRUE }
+# Histograms
+
+hist(person$SSTYPEA)
+hist(person$SSTYPEB)
+hist(person$SSTYPEC)
+hist(person$SSTYPED)
+hist(person$SSTYPEE)
+hist(person$SSTYPEF)
+hist(person$SSTYPEG)
+hist(person$SSTYPEH)
+hist(person$SSTYPEI)
+hist(person$SSTYPEJ)
+hist(person$SSTYPEK)
+hist(person$SSTYPEL)
+
+```
+
+
+
+
+Model  for no cancer coverage and needed care
+
+```{r echo = TRUE }
+cancermodel <- glm(need1 ~ sstypec+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(cancermodel)
+
+```
+
+Model  for no accident and needed care
+
+```{r echo = TRUE }
+accidentmodel <- glm(need1 ~ sstypea+sex+AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(accidentmodel)
+
+```
+
+Model  for all coverages and needed care
+
+```{r echo = TRUE }
+plansmodel <- glm(need1 ~ sstypea+sstypeb+sstypec+sstyped+sstypee+sstypef+sstypeg+sstypeh+sstypei+sstypej+sstypek, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(plansmodel)
+
+```
+
+
+Create new variables
+
+```{r echo = TRUE }
+person$histop4 <- with(person, ifelse(person$HISTOP4 == 1, 1, 0))
+person$histop4 <- factor(person$histop4)
+
+
+head(person$histop4)
+```
+
+Model  for all Employer not offering coverage and needed care
+
+```{r echo = TRUE }
+empcovmodel <- glm(need1 ~ histop4 + sex + AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(empcovmodel)
+
+```
+
+Model  for all Employer not offering coverage and delayed care
+
+```{r echo = TRUE }
+empcovmodel2 <- glm(delay1 ~ histop4 + sex + AGE_P, data = person, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(empcovmodel2)
+
+```
+
+
+Create Training and Testing Datasets
+
+```{r echo = TRUE }
+#create a list of random number ranging from 1 to number of rows from actual data and 70% of the data into training data  
+
+data1 = sort(sample(nrow(person), nrow(person)*.7))
+
+#creating training data set by selecting the output row values  
+train<-person[data1,]
+
+#creating test data set by not selecting the output row values
+test<-person[-data1,]
+
+```
+
+Model cancer and needed care using training data
+
+```{r echo = TRUE }
+cancermodeltrain <- glm(need1 ~ sstypec+sex+AGE_P, data = train, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(cancermodeltrain)
+
+```
+
+Make predictions
+
+```{r echo = TRUE }
+#Make predictions
+cancerpredict <- cancermodeltrain %>% predict(test, type = "terms")
+
+head(cancerpredict)
+
+summary(cancerpredict)
+```
+
+
+
+
+Model  for no accident and needed care using training set
+
+```{r echo = TRUE }
+accidentmodeltrain <- glm(need1 ~ sstypea+sex+AGE_P, data = train, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(accidentmodeltrain)
+
+```
+
+Make predictions
+
+```{r echo = TRUE }
+#Make predictions
+accidentpredict <- accidentmodeltrain %>% predict(test, type = "terms")
+
+head(accidentpredict)
+
+summary(accidentpredict)
+```
+
+
+
+
+
+
+Model  for all coverages and needed care using training set
+
+```{r echo = TRUE }
+plansmodeltrain <- glm(need1 ~ sstypea+sstypeb+sstypec+sstyped+sstypee+sstypef+sstypeg+sstypeh+sstypei+sstypej+sstypek, data = train, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(plansmodeltrain)
+
+```
+
+
+Make predictions
+
+```{r echo = TRUE }
+#Make predictions
+planspredict <- plansmodeltrain %>% predict(test, type = "terms")
+
+head(planspredict)
+
+summary(planspredict)
+```
+
+
+
+
+
+Model  for all Employer not offering coverage and needed care using training set
+
+```{r echo = TRUE }
+empcovmodeltrain <- glm(need1 ~ histop4 + sex + AGE_P, data = train, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(empcovmodeltrain)
+
+```
+
+
+Make predictions
+
+```{r echo = TRUE }
+#Make predictions
+empcovpredict <- empcovmodeltrain %>% predict(test, type = "terms")
+
+head(empcovpredict)
+
+summary(empcovpredict)
+```
+
+
+
+
+
+Model  for all Employer not offering coverage and delayed care using training set
+
+```{r echo = TRUE }
+empcovmodeltrain2 <- glm(delay1 ~ histop4 + sex + AGE_P, data = train, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(empcovmodeltrain2)
+
+```
+
+
+Make predictions
+
+```{r echo = TRUE }
+#Make predictions
+empcov2predict <- empcovmodeltrain2 %>% predict(test, type = "terms")
+
+head(empcov2predict)
+
+summary(empcov2predict)
+```
+
+
+
+

@@ -1,0 +1,76 @@
+---
+title: "DSC 630 Project"
+author: "Christine Hathaway"
+date: "December 24, 2019"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+
+```{r include = FALSE}
+#Set the working directory
+setwd("C:/Users/Christine/Documents/Bellevue/DSC 630/Project/Datasets")
+```
+
+
+```{r include = FALSE}
+#Install packages needed for file
+library(ggplot2)
+library(reshape)
+library(reshape2)
+library("ggpubr")
+require(scales)
+library("pastecs")
+library("Hmisc")
+library("caret")
+library("plyr")
+```
+
+Import data from family.csv file
+
+```{r echo = FALSE }
+#Import family.csv file
+family <- read.csv(file = "C:/Users/Christine/Documents/Bellevue/DSC 630/Project/Datasets/family.csv", header = TRUE)
+```
+
+Display first five records of file
+
+```{r echo = FALSE }
+head(family)
+```
+
+Run str() function of file
+
+```{r echo = FALSE }
+str(family)
+```
+
+Run stat.desc() function of file
+
+```{r echo = FALSE }
+stat.desc(family)
+```
+
+Run frequency of each variable
+
+```{r echo = FALSE }
+lapply(family, function(x) {
+
+    if (is.numeric(x)) return(count(x))
+
+    if (is.factor(x)) return(table(x))
+
+})
+
+```
+
+
+
+

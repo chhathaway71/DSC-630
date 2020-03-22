@@ -1,0 +1,180 @@
+---
+title: "Combined files"
+author: "Christine Hathaway"
+date: "January 4, 2020"
+output:
+  pdf_document: default
+  html_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = FALSE)
+```
+
+```{r include = TRUE}
+#Set the working directory
+setwd("C:/Users/Christine/Documents/Bellevue/DSC 630/Project/Datasets")
+```
+
+
+```{r include = FALSE}
+#Install packages needed for file
+library(ggplot2)
+library(reshape)
+library(reshape2)
+library("ggpubr")
+require(scales)
+library("pastecs")
+library("Hmisc")
+library("caret")
+library("plyr")
+```
+
+Import data from personsxcsv and sampleadult files
+
+```{r echo = TRUE}
+#Import CondPerson.csv file
+person2 <- read.csv(file = "C:/Users/Christine/Documents/Bellevue/DSC 630/Project/Datasets/CondPerson.csv", header = TRUE, na.strings = " ")
+
+#Import condsamadult.csv file
+adult2 <- read.csv(file = "C:/Users/Christine/Documents/Bellevue/DSC 630/Project/Datasets/condsamadult.csv", header = TRUE, na.strings = " ")
+```
+
+
+Create new file to link person with sampleadult
+
+```{r echo = TRUE }
+new <-merge(x = person2, y = adult2, by="ID")
+
+head(new)
+
+describe(new)
+
+```
+
+Create new variables
+
+```{r echo = TRUE }
+new$histop1 <- with(new, ifelse(new$HISTOP4 == 1, 1, 0))
+new$histop2 <- factor(new$histop1)
+
+new$need1 <- with(new, ifelse(new$PNMED12M == 1, 1, 0))
+new$need2 <- factor(new$need1)
+
+new$delay1 <- with(new, ifelse(new$PDMED12M == 1, 1, 0))
+new$delay2 <- factor(new$delay1)
+
+new$notcov1 <- with(new, ifelse(new$NOTCOV == 2, 1, 0))
+new$notcov2 <- factor(new$notcov1)
+
+new$pdsick1 <- with(new, ifelse(new$PDSICKA == 1, 1, 0))
+new$pdsick2 <- factor(new$pdsick1)
+
+new$sex2<- factor(new$SEX.x)
+new$sex1 <- new$sex2.as.integer
+
+head(new)
+```
+
+
+Model for have sick pay but delayed care
+
+```{r echo = TRUE }
+sickmodel <- glm(delay2 ~ pdsick2 + sex2 + AGE_P, data = new, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(sickmodel)
+
+```
+
+
+
+Model  for have sick pay but didn't get needed care
+
+```{r echo = TRUE }
+sickmodel2 <- glm(need2 ~ pdsick2 + sex2 + AGE_P, data = new, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(sickmodel2)
+
+```
+
+Create Training and Testing Datasets
+
+```{r echo = TRUE }
+#create a list of random number ranging from 1 to number of rows from actual data and 70% of the data into training data  
+
+data1 = sort(sample(nrow(new), nrow(new)*.7))
+
+#creating training data set by selecting the output row values  
+trainnew<-new[data1,]
+
+#creating test data set by not selecting the output row values
+testnew<-new[-data1,]
+
+```
+
+
+
+Model for have sick pay but delayed care using training data
+
+```{r echo = TRUE }
+sickmodeltrain <- glm(delay2 ~ pdsick2 + sex2 + AGE_P, data = trainnew, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(sickmodeltrain)
+
+```
+
+Make predictions
+
+```{r echo = TRUE }
+#Make predictions
+sickpredict <-  predict(sickmodeltrain, testnew, type = "terms")
+
+head(sickpredict)
+
+summary(sickpredict)
+```
+
+
+
+Model  for have sick pay but didn't get needed care using training data
+
+```{r echo = TRUE }
+sickmodel2train <- glm(need2 ~ pdsick2 + sex2 + AGE_P, data = trainnew, family = "binomial")
+
+```
+
+Output model results
+
+```{r echo = TRUE }
+summary(sickmodel2train)
+
+```
+
+Make predictions
+
+```{r echo = TRUE }
+#Make predictions
+sick2predict <- predict(sickmodel2train, testnew, type = "terms")
+
+head(sick2predict)
+
+summary(sick2predict)
+```
+
+
